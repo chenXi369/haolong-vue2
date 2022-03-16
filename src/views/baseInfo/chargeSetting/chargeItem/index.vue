@@ -143,6 +143,8 @@ import {
   getNewWyChargeMonth,
 } from "@/api/system/payItemGeneral";
 
+import { calPlusItem } from '@/api/chargeManage/dosageUserTable'
+
 import LProgress from "../components/LProgress.vue";
 
 import DragArea from "@/components/DragArea/index.vue";
@@ -217,6 +219,18 @@ export default {
         reminderTitle: null,
         reminderFooter: null,
         reminderContent: []
+      },
+      // 附加项目计算要传的值
+      calPlusItemData: {
+        taskkey: null,
+        XMFlag: null,
+        WYID: null,
+        LYID: null,
+        LID: null,
+        JFID: null,
+        BZID: null,
+        JFYF: null,
+        SysTest: 1
       }
     };
   },
@@ -722,23 +736,54 @@ export default {
     },
     /** 计算附加费的确定 */ 
     confirmReminder() {
+      // XMFlag 附加费的计算
+      this.calPlusItemData.taskkey = this.guid()
+      this.getCalPlusItem(this.calPlusItemData.XMFlag)
+      this.calPlusItemData.JFYF = this.newWyChargeMonth
+      calPlusItem(this.calPlusItemData).then(() => {
+        this.$message.success('附加费计算完成！')
+      })
       this.reminderVisible = false
     },
     // 关闭附加费的dialog
     closeReminder() {
       this.reminderVisible = false
     },
+    // 根据类型分别送值
+    getCalPlusItem(type) {
+      switch (type) {
+        case 0:
+          this.calPlusItemData.WYID = this.selectedWyBuild.propertyId
+          break;
+        case 3:
+          this.calPlusItemData.LYID = this.selectedWyBuild.buildingId
+          break;
+        default:
+          break;
+      }
+    },
+    // 对象置空
+    resetObj(obj) {
+      Object.keys(obj).forEach(key => obj[key] = null)
+    },
     // 计算客户所有收费项目的附加费
     computeUserItemPay(row) {
+      this.resetObj(this.calPlusItemData)
+      this.calPlusItemData.XMFlag = 6
+      this.calPlusItemData.LID = row.ID
       this.reminderVisible = true
       this.dialogTitle = "附加项目费用计算"
       this.reminder.reminderFooter = "确定要开始计算？"
       this.reminder.reminderTitle = `客户：【${row.客户名称}】`
       this.reminder.reminderContent = [`范围：【全部附加项目】    计费月份：【${this.newWyChargeMonth}】`]
-      
     },
     // 计算选定项目的附加项目费用
     computedItemPay(row) {
+      console.log(row)
+      this.resetObj(this.calPlusItemData)
+      this.calPlusItemData.XMFlag = 7
+      this.calPlusItemData.LID = row.LID
+      this.calPlusItemData.BZID = row.BZID
       this.reminderVisible = true
       this.dialogTitle = "附加项目费用计算"
       this.reminder.reminderFooter = "确定要开始计算？"
@@ -747,8 +792,8 @@ export default {
     },
     // 计算当前物业或者楼栋的附加项目费用
     createOtherChargePay(row) {
-      console.log(row)
-      console.log(this.selectedWyBuild)
+      this.resetObj(this.calPlusItemData)
+      this.calPlusItemData.XMFlag = this.selectedWyBuild.allChecked ? 3 : 0 
       this.reminderVisible = true
       this.dialogTitle = "附加项目费用计算"
       this.reminder.reminderFooter = "确定要开始计算？"

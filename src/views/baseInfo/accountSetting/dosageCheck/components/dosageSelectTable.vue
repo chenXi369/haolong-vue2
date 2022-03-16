@@ -62,8 +62,8 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.上次读数)"
-            @keyup.enter.native="changeSubVal('上次读数' ,scope.row.上次读数)"
-            @keydown.native="(item) => subInputBlur('上次读数', scope.row.上次读数, item)"
+            @keyup.enter.native="changeSubVal('上次读数' ,scope.row.上次读数, scope.row)"
+            @keydown.native="(item) => subInputBlur('上次读数', scope.row.上次读数, scope.row, item)"
             v-focus
           ></el-input>
           <span v-else>{{ scope.row.上次读数 }}</span>
@@ -76,8 +76,8 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.本次读数)"
-            @keyup.enter.native="changeSubVal('本次读数' ,scope.row.本次读数)"
-            @keydown.native="(item) => subInputBlur('本次读数', scope.row.本次读数, item)"
+            @keyup.enter.native="changeSubVal('本次读数' ,scope.row.本次读数, scope.row)"
+            @keydown.native="(item) => subInputBlur('本次读数', scope.row.本次读数, scope.row, item)"
             v-clearZero
           ></el-input>
           <span v-else>{{ scope.row.本次读数 }}</span>
@@ -90,8 +90,8 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.净用量)"
-            @keyup.enter.native="changeSubVal('净用量' ,scope.row.净用量)"
-            @keydown.native="(item) => subInputBlur('净用量', scope.row.净用量, item)"
+            @keyup.enter.native="changeSubVal('净用量' ,scope.row.净用量, scope.row)"
+            @keydown.native="(item) => subInputBlur('净用量', scope.row.净用量, scope.row, item)"
             v-clearZero
           ></el-input>
           <span v-else>{{ scope.row.净用量 }}</span>
@@ -104,8 +104,8 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.附加用量)"
-            @keyup.enter.native="changeSubVal('附加用量' ,scope.row.附加用量)"
-            @keydown.native="(item) => subInputBlur('附加用量', scope.row.附加用量, item)"
+            @keyup.enter.native="changeSubVal('附加用量' ,scope.row.附加用量, scope.row)"
+            @keydown.native="(item) => subInputBlur('附加用量', scope.row.附加用量, scope.row, item)"
             v-clearZero
           ></el-input>
           <span v-else>{{ scope.row.附加用量 }}</span>
@@ -118,8 +118,8 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.计费用量)"
-            @keyup.enter.native="changeSubVal('计费用量' ,scope.row.计费用量)"
-            @keydown.native="(item) => subInputBlur('计费用量', scope.row.计费用量, item)"
+            @keyup.enter.native="changeSubVal('计费用量' ,scope.row.计费用量, scope.row)"
+            @keydown.native="(item) => subInputBlur('计费用量', scope.row.计费用量, scope.row, item)"
             v-clearZero
           ></el-input>
           <span v-else>{{ scope.row.计费用量 }}</span>
@@ -132,8 +132,8 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.基本费)"
-            @keyup.enter.native="changeSubVal('基本费' ,scope.row.基本费)"
-            @keydown.native="(item) => subInputBlur('基本费', scope.row.基本费, item)"
+            @keyup.enter.native="changeSubVal('基本费' ,scope.row.基本费, scope.row)"
+            @keydown.native="(item) => subInputBlur('基本费', scope.row.基本费, scope.row, item)"
             v-clearZero
           ></el-input>
           <span v-else>{{ scope.row.基本费 }}</span>
@@ -146,8 +146,8 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.附加费)"
-            @keyup.enter.native="changeSubVal('附加费' ,scope.row.附加费)"
-            @keydown.native="(item) => subInputBlur('附加费', scope.row.附加费, item)"
+            @keyup.enter.native="changeSubVal('附加费' ,scope.row.附加费, scope.row)"
+            @keydown.native="(item) => subInputBlur('附加费', scope.row.附加费, scope.row, item)"
             v-clearZero
           ></el-input>
           <span v-else>{{ scope.row.附加费 }}</span>
@@ -319,15 +319,26 @@ export default {
       })
     },
     // 分表可编辑input的 回车处理
-    changeSubVal(key, val) {
+    changeSubVal(key, val, row) {
       const sortSubState = this.sortSubTableKey(key, val)
+      let selectIdx = this.getSelectIdx() 
       if(sortSubState) {
-        let selectIdx = this.dosageSelectItems.findIndex((row) => 
-          row.FJYSID === this.selectSubRow.FJYSID
-        )
-        // 长度判断 是切换到下一行还是切换总表的下一行
-        this.subTableLength(selectIdx)
+        let data = {
+          subTable: {...row},
+          editField: key
+        }
+        let totalData = { data: data, selectIdx, type: 0 }
+        this.$emit('updateSubRow', totalData)
       }
+    },
+    getSelectIdx() {
+      this.dosageSelectItems.findIndex((row) => 
+        row.FJYSID === this.selectSubRow.FJYSID
+      )
+    },
+    // 长度判断 是切换到下一行还是切换总表的下一行
+    judgeLength(selectIdx) {
+      this.subTableLength(selectIdx)
     },
     // 分表数据的长度判断
     subTableLength(index) {
@@ -347,10 +358,18 @@ export default {
       }
     },
     // 分表输入框失去焦点
-    subInputBlur(key, val, item) {
-      const sortSubState = this.sortSubTableKey(key, val)
-      if(item.key === 'Tab' || sortSubState) {
-        console.log(val)
+    subInputBlur(key, val, row, event) {
+      if(event.key === 'Tab') {
+        const sortSubState = this.sortSubTableKey(key, val)
+        if(sortSubState) {
+          let selectIdx = this.getSelectIdx() 
+          let data = {
+            subTable: {...row},
+            editField: key
+          }
+          let totalData = { data: data, selectIdx, type: 1 }
+          this.$emit('updateSubRow', totalData)
+        }
       }
     }
   },

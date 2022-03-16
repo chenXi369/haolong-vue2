@@ -23,6 +23,7 @@
         :dosageUserTotal="dosageUserTotal"
         :dosageTableLoading="dosageTableLoading"
         @dblClick="dblClick"
+        @updateAllTabRow="updateAllTabRow"
         @handleCurrentUser="handleCurrentUser"
       ></dosage-user-table>
       <drag-area
@@ -31,9 +32,11 @@
         @changeHeight="changeHeight"
       ></drag-area>
       <dosage-select-table
+        ref="dosageSubTab"
         :bottomHeight="bottomHeight"
         :dosageSelectItems="dosageSelectItems"
         :dosageSelectLoading="dosageSelectLoading"
+        @updateSubRow="updateSubRow"
         @sublengthOverFlow="sublengthOverFlow"
       >
       </dosage-select-table>
@@ -51,7 +54,7 @@ import DosageSelectTable from "./components/dosageSelectTable.vue";
 import {
   getSummary,
   updateSummary,
-  getSubmeter,
+  getSubmeter
 } from "@/api/chargeManage/dosageUserTable";
 
 export default {
@@ -82,7 +85,8 @@ export default {
       dosageSelectItems: [],
       timer: null,
       toolForm: {},
-      subTabLength: 0
+      subTabLength: 0,
+      selectedAllTabRow: {}
     };
   },
   components: {
@@ -195,6 +199,7 @@ export default {
     },
     // 总表单选选中
     handleCurrentUser(row) {
+      this.selectedAllTabRow = {...row}
       this.getSubmeterList(row)
     },
     // 总表双击行的处理
@@ -209,6 +214,26 @@ export default {
     showFinishUser(obj) {
       this.toolForm = { ...obj }
       this.getSummaryList(this.wyBuildData)
+    },
+    // 修改总表数据
+    updateAllTabRow(total) {
+      let sumData = {...total.data}
+      updateSummary(sumData).then((res) => {
+        this.dosageUserData[total.selectIdx] = res.sumTable
+        if(!total.type) {
+          this.$refs.dosageAllTab.judgeLength(total.selectIdx)
+        }
+      })
+    },
+    // 修改分表
+    updateSubRow(total) {
+      let subData = {...total.data, sumTable: this.selectedAllTabRow}
+      updateSummary(subData).then((res) => {
+        this.dosageSelectItems[total.selectIdx] = res.subTable[total.selectIdx]
+        if(!total.type) {
+          this.$refs.dosageSubTab.judgeLength(total.selectIdx)
+        }
+      })
     }
   }
 };

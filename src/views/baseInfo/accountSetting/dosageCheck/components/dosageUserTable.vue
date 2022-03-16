@@ -66,7 +66,7 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.上次读数, scope.row, '上次读数')"
-            @keydown.native="(item) => editTabCol('上次读数', scope.row.上次读数, item)"
+            @keydown.native="(item) => editTabCol('上次读数', scope.row.上次读数, scope.row, item)"
             v-focus
           ></el-input>
           <div @dblclick="openEditState(scope.row)" v-else>
@@ -81,7 +81,7 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.本次读数, scope.row, '本次读数')"
-            @keydown.native="(item) => editTabCol('本次读数', scope.row.本次读数, item)"
+            @keydown.native="(item) => editTabCol('本次读数', scope.row.本次读数, scope.row, item)"
             v-clearZero
           ></el-input>
           <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.本次读数 }}</span>
@@ -94,7 +94,7 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.净用量, scope.row, '净用量')"
-            @keydown.native="(item) => editTabCol('净用量', scope.row.净用量, item)"
+            @keydown.native="(item) => editTabCol('净用量', scope.row.净用量, scope.row, item)"
             v-clearZero
           ></el-input>
           <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.净用量 }}</span>
@@ -107,7 +107,7 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.附加用量, scope.row, '附加用量')"
-            @keydown.native="(item) => editTabCol('附加用量', scope.row.附加用量, item)"
+            @keydown.native="(item) => editTabCol('附加用量', scope.row.附加用量, scope.row, item)"
             v-clearZero
           ></el-input>
           <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.附加用量 }}</span>
@@ -120,7 +120,7 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.计费用量, scope.row, '计费用量')"
-            @keydown.native="(item) => editTabCol('计费用量', scope.row.计费用量, item)"
+            @keydown.native="(item) => editTabCol('计费用量', scope.row.计费用量, scope.row, item)"
             v-clearZero
           ></el-input>
           <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.计费用量 }}</span>
@@ -133,7 +133,7 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.基本费, scope.row, '基本费')"
-            @keydown.native="(item) => editTabCol('基本费', scope.row.基本费, item)"
+            @keydown.native="(item) => editTabCol('基本费', scope.row.基本费, scope.row, item)"
             v-clearZero
           ></el-input>
           <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.基本费 }}</span>
@@ -146,7 +146,7 @@
             size="mini"
             v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.附加费, scope.row, '附加费')"
-            @keydown.native="(item) => editTabCol('附加费', scope.row.附加费, item)"
+            @keydown.native="(item) => editTabCol('附加费', scope.row.附加费, scope.row, item)"
             v-clearZero
           ></el-input>
           <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.附加费 }}</span>
@@ -189,7 +189,7 @@
             type="date"
             style="width: 130px"
             placeholder="选择日期"
-            @keydown.native="(item) => editTabCol('上次抄表', scope.row.上次抄表, item)"
+            @keydown.native="(item) => editTabCol('上次抄表', scope.row.上次抄表, scope.row, item)"
           >
           </el-date-picker>
 
@@ -209,7 +209,7 @@
             type="date"
             style="width: 130px"
             placeholder="选择日期"
-            @keydown.native="(item) => editTabCol('本次抄表', scope.row.本次抄表, item)"
+            @keydown.native="(item) => editTabCol('本次抄表', scope.row.本次抄表, scope.row, item)"
           >
           </el-date-picker>
 
@@ -366,45 +366,52 @@ export default {
       // 双击的处理
       this.$emit('dblClick')
     },
-    // 修改的回车处理 和 失焦处理
-    async editTabCol(key, val, item) {
+    // 修改的回车处理
+    async editTabCol(key, val, row, event) {
       const sortState = this.sortAllTableKey(key, val);
       // 判断是否有分表
-      if(item.key === 'Enter' && sortState) {
+      if(event.key === 'Enter' && sortState) {
         if (~~this.subTabLength) {
-          await this.showModel(item.key)
+          await this.showModel(key, val, row, event.key)
         } else {
-          this.keyEnterEvent()
+          this.keyEnterEvent(key, val, row)
         }
-      } else if(item.key === 'Tab' && sortState) {
+      } else if(event.key === 'Tab' && sortState) {
         if (~~this.subTabLength) {
-          await this.showModel(key, val, item.key)
+          await this.showModel(key, val, row, event.key)
         } else {
-          this.keyTabEvent(key, val)
+          this.keyTabEvent(key, val, row)
         }
       }
     },
-    showModel(key, val, type) {
+    showModel(key, val, row, type) {
       this.$confirm('有多个分表存在，建议不要直接修改', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         if(type === 'Enter') {
-          this.keyEnterEvent()
+          this.keyEnterEvent(key, val, row)
         } else {
-          this.keyTabEvent(key, val)
+          this.keyTabEvent(key, val, row)
         }
       }).catch(() => {
         return false
       })
     },
     // 实际回车逻辑处理
-    keyEnterEvent(key, val) {
+    keyEnterEvent(key, val, row) {
       let selectIdx = this.dosageUserData.findIndex(
         (row) => row.ID === this.selectRow.ID
       );
-
+      let data = {
+        editField: key,
+        sumTable: {...row}
+      }
+      let totalData = { data: data, selectIdx, type: 0 }
+      this.$emit('updateAllTabRow', totalData)
+    },
+    judgeLength(selectIdx) {
       // 长度判断 是切换到下一行还是切换总表的下一行
       if(selectIdx + 1 < this.dosageUserData.length) {
         this.handleCurrentChange(this.dosageUserData[selectIdx + 1]);

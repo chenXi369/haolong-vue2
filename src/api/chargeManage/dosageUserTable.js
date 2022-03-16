@@ -11,15 +11,6 @@ export function getSummary(data) {
     })
 }
 
-// 修改总表数据 -> post
-export function updateSummary(data) {
-  return request({
-    url: urlPost + '/dosage-register/list-getGeneralTable',
-    method: 'post',
-    data
-  })
-}
-
 // 分表数据list  post
 export function getSubmeter(query) {
   return request({
@@ -33,6 +24,15 @@ export function getSubmeter(query) {
 export function calPlusItem(data) {
   return request({
     url: urlPost + '/dosage-register/sfxmJs',
+    method: 'post',
+    data
+  })
+}
+
+// 修改总分表
+export function updateSummary(data) {
+  return request({
+    url: urlPost + '/dosage-register/update-sumOrSubTable',
     method: 'post',
     data
   })
