@@ -150,17 +150,10 @@ export default {
         getSummary(data)
           .then((res) => {
             this.dosageUserData = this.arrSetEdit([...res.data.records]);
-            console.log(this.dosageUserData);
             this.dosageUserTotal = res.data.total;
             this.dosageTableLoading = false;
+            this.dosageSelectItems = []
           })
-          .then(() => {
-            if (this.dosageUserData && this.dosageUserData.length > 0) {
-              this.dosageSelectLoading = true;
-            } else {
-              this.dosageSelectItems = []
-            }
-          });
       }, 500);
     },
     // 获取分表的list
@@ -177,13 +170,12 @@ export default {
             })
           } else {
             this.dosageSelectItems = []
-            this.dosageUserData.map((item) => {
-              if(item.ID === row.ID) {
-                item.isEdit = true
-              } else {
-                item.isEdit = false
-              }
-            })
+            let selectIdx = this.dosageUserData.findIndex(item => 
+              item.ID === row.ID
+            )
+            this.dosageUserData = this.arrSetEdit(this.dosageUserData)
+            this.$set(this.dosageUserData[selectIdx], 'isEdit', true)
+            console.log(selectIdx)
           }
           this.dosageSelectLoading = false
           this.subTabLength = this.dosageSelectItems.length
@@ -219,9 +211,11 @@ export default {
     updateAllTabRow(total) {
       let sumData = {...total.data}
       updateSummary(sumData).then((res) => {
-        this.dosageUserData[total.selectIdx] = res.sumTable
+        this.$set(this.dosageUserData, total.selectIdx, {...res.sumTable})
         if(!total.type) {
           this.$refs.dosageAllTab.judgeLength(total.selectIdx)
+        } else {
+          this.$set(this.dosageUserData[total.selectIdx], 'isEdit', true)
         }
       })
     },
@@ -229,9 +223,12 @@ export default {
     updateSubRow(total) {
       let subData = {...total.data, sumTable: this.selectedAllTabRow}
       updateSummary(subData).then((res) => {
-        this.dosageSelectItems[total.selectIdx] = res.subTable[total.selectIdx]
         if(!total.type) {
+          this.dosageSelectItems[total.selectIdx] = res.subTable[total.selectIdx]
           this.$refs.dosageSubTab.judgeLength(total.selectIdx)
+        } else {
+          this.$set(this.dosageSelectItems, total.selectIdx, {...res.subTable[total.selectIdx]})
+          this.$set(this.dosageSelectItems[total.selectIdx], 'isEdit', true)
         }
       })
     }

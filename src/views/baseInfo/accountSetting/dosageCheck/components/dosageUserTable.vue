@@ -12,7 +12,6 @@
       highlight-current-row
       :header-cell-style="{ textAlign: 'center' }"
       @current-change="handleCurrentChange"
-      @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="50" align="center">
       </el-table-column>
@@ -79,12 +78,12 @@
           <el-input
             v-model="scope.row.本次读数"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.本次读数, scope.row, '本次读数')"
             @keydown.native="(item) => editTabCol('本次读数', scope.row.本次读数, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.本次读数 }}</span>
+          <span @dblclick="openEditState(scope.row)"  v-show="!scope.row.isEdit">{{ scope.row.本次读数 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="净用量" align="right" width="120">
@@ -92,12 +91,12 @@
           <el-input
             v-model="scope.row.净用量"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.净用量, scope.row, '净用量')"
             @keydown.native="(item) => editTabCol('净用量', scope.row.净用量, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.净用量 }}</span>
+          <span @dblclick="openEditState(scope.row)" v-show="!scope.row.isEdit">{{ scope.row.净用量 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="附加用量" align="right" width="120">
@@ -105,12 +104,12 @@
           <el-input
             v-model="scope.row.附加用量"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.附加用量, scope.row, '附加用量')"
             @keydown.native="(item) => editTabCol('附加用量', scope.row.附加用量, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.附加用量 }}</span>
+          <span @dblclick="openEditState(scope.row)" v-show="!scope.row.isEdit">{{ scope.row.附加用量 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="计费用量" align="right" width="120">
@@ -118,12 +117,12 @@
           <el-input
             v-model="scope.row.计费用量"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.计费用量, scope.row, '计费用量')"
             @keydown.native="(item) => editTabCol('计费用量', scope.row.计费用量, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.计费用量 }}</span>
+          <span @dblclick="openEditState(scope.row)" v-show="!scope.row.isEdit">{{ scope.row.计费用量 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="基本费" align="right" width="120">
@@ -131,12 +130,12 @@
           <el-input
             v-model="scope.row.基本费"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.基本费, scope.row, '基本费')"
             @keydown.native="(item) => editTabCol('基本费', scope.row.基本费, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.基本费 }}</span>
+          <span @dblclick="openEditState(scope.row)" v-show="!scope.row.isEdit">{{ scope.row.基本费 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="附加费" align="right" width="100">
@@ -144,12 +143,12 @@
           <el-input
             v-model="scope.row.附加费"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.附加费, scope.row, '附加费')"
             @keydown.native="(item) => editTabCol('附加费', scope.row.附加费, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.附加费 }}</span>
+          <span @dblclick="openEditState(scope.row)" v-show="!scope.row.isEdit">{{ scope.row.附加费 }}</span>
         </template>
       </el-table-column>
 
@@ -184,7 +183,7 @@
         <template slot-scope="scope">
           <el-date-picker
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             v-model="scope.row.上次抄表"
             type="date"
             style="width: 130px"
@@ -193,7 +192,7 @@
           >
           </el-date-picker>
 
-          <div v-else>{{ scope.row.上次抄表 }}</div>
+          <div v-show="!scope.row.isEdit">{{ scope.row.上次抄表 }}</div>
         </template>
       </el-table-column>
       <el-table-column
@@ -204,7 +203,7 @@
         <template slot-scope="scope">
           <el-date-picker
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             v-model="scope.row.本次抄表"
             type="date"
             style="width: 130px"
@@ -213,7 +212,7 @@
           >
           </el-date-picker>
 
-          <div v-else>{{ scope.row.本次抄表 }}</div>
+          <div v-show="!scope.row.isEdit">{{ scope.row.本次抄表 }}</div>
         </template>
       </el-table-column>
 
@@ -290,20 +289,10 @@ export default {
       return tHeight;
     },
   },
-  watch: {
-    dosageUserData() {
-      this.$nextTick(() => {
-        this.$refs.dosageUserData.setCurrentRow(this.dosageUserData[0]);
-      });
-    },
-  },
   methods: {
     // 输入框只能输入合法数字的校验
     onlyNumber(num, row, key) {
       row[key] = onlyNumOnePoint(num)
-    },
-    handleSelectionChange(val) {
-      this.$emit("handleSelection", val);
     },
     // 分页
     getTable() {
@@ -401,6 +390,7 @@ export default {
     },
     // 实际回车逻辑处理
     keyEnterEvent(key, val, row) {
+      this.checkNowNum(key, val, row) 
       let selectIdx = this.dosageUserData.findIndex(
         (row) => row.ID === this.selectRow.ID
       );
@@ -412,17 +402,26 @@ export default {
       this.$emit('updateAllTabRow', totalData)
     },
     judgeLength(selectIdx) {
-      // 长度判断 是切换到下一行还是切换总表的下一行
+      // 长度判断 是切换到下一行还是隐藏
       if(selectIdx + 1 < this.dosageUserData.length) {
+        console.log(this.dosageUserData[selectIdx + 1])
         this.handleCurrentChange(this.dosageUserData[selectIdx + 1]);
       } else {
-        this.dosageUserData[selectIdx].isEdit = false
         this.$refs.dosageUserData.setCurrentRow();
       }
     },
     // 实际的tab逻辑
-    keyTabEvent(key, val) {
-      console.log(key, val)
+    keyTabEvent(key, val, row) {
+      this.checkNowNum(key, val, row) 
+      let selectIdx = this.dosageUserData.findIndex(
+        (row) => row.ID === this.selectRow.ID
+      );
+      let data = {
+        editField: key,
+        sumTable: {...row}
+      }
+      let totalData = { data: data, selectIdx, type: 1 }
+      this.$emit('updateAllTabRow', totalData)
     },
     // 总表修改值比较函数
     sortAllTableKey(key, val) {
@@ -439,6 +438,13 @@ export default {
       );
       this.handleCurrentChange(this.dosageUserData[selectedId + 1]);
     },
+    // 校验本次读数
+    checkNowNum(key, val, row) {
+      if(key === '本次读数' && parseFloat(row.上次读数) > val) {
+        this.$message.warning('本次读数不应小于上次读数！')
+        return
+      }
+    }
   }
 }
 </script>

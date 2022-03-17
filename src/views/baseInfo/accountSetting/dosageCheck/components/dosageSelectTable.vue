@@ -74,13 +74,13 @@
           <el-input
             v-model="scope.row.本次读数"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.本次读数)"
             @keyup.enter.native="changeSubVal('本次读数' ,scope.row.本次读数, scope.row)"
             @keydown.native="(item) => subInputBlur('本次读数', scope.row.本次读数, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span v-else>{{ scope.row.本次读数 }}</span>
+          <span v-show="!scope.row.isEdit">{{ scope.row.本次读数 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="净用量" width="120" align="right">
@@ -88,13 +88,13 @@
           <el-input
             v-model="scope.row.净用量"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.净用量)"
             @keyup.enter.native="changeSubVal('净用量' ,scope.row.净用量, scope.row)"
             @keydown.native="(item) => subInputBlur('净用量', scope.row.净用量, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span v-else>{{ scope.row.净用量 }}</span>
+          <span v-show="!scope.row.isEdit">{{ scope.row.净用量 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="附加用量" width="120" align="right">
@@ -102,13 +102,13 @@
           <el-input
             v-model="scope.row.附加用量"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.附加用量)"
             @keyup.enter.native="changeSubVal('附加用量' ,scope.row.附加用量, scope.row)"
             @keydown.native="(item) => subInputBlur('附加用量', scope.row.附加用量, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span v-else>{{ scope.row.附加用量 }}</span>
+          <span v-show="!scope.row.isEdit">{{ scope.row.附加用量 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="计费用量" width="120" align="right">
@@ -116,13 +116,13 @@
           <el-input
             v-model="scope.row.计费用量"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.计费用量)"
             @keyup.enter.native="changeSubVal('计费用量' ,scope.row.计费用量, scope.row)"
             @keydown.native="(item) => subInputBlur('计费用量', scope.row.计费用量, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span v-else>{{ scope.row.计费用量 }}</span>
+          <span v-show="!scope.row.isEdit">{{ scope.row.计费用量 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="基本费" width="120" align="right">
@@ -130,13 +130,13 @@
           <el-input
             v-model="scope.row.基本费"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.基本费)"
             @keyup.enter.native="changeSubVal('基本费' ,scope.row.基本费, scope.row)"
             @keydown.native="(item) => subInputBlur('基本费', scope.row.基本费, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span v-else>{{ scope.row.基本费 }}</span>
+          <span  v-show="!scope.row.isEdit">{{ scope.row.基本费 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="附加费" width="120" align="right">
@@ -144,13 +144,13 @@
           <el-input
             v-model="scope.row.附加费"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.附加费)"
             @keyup.enter.native="changeSubVal('附加费' ,scope.row.附加费, scope.row)"
             @keydown.native="(item) => subInputBlur('附加费', scope.row.附加费, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span v-else>{{ scope.row.附加费 }}</span>
+          <span v-show="!scope.row.isEdit">{{ scope.row.附加费 }}</span>
         </template>
       </el-table-column>
 
@@ -258,38 +258,6 @@ export default {
         }
       }
     },
-    // 托收
-    isCollective(row) {
-      if (!row.isEdit) {
-        if (!row.银行托收) {
-          this.$confirm(`要取消 [${row.项目名称}] 的托收有效性吗?`, "警告", {
-            confirmButtonText: "确认",
-            cancelButtonText: "取消",
-            type: "warning",
-          })
-            .then(() => {
-              this.$emit("updatePayFeeItem", row);
-            })
-            .catch(() => {
-              this.$emit("cacnelUpdatePayFeeItem", row);
-              console.log("点击取消");
-            });
-        } else {
-          this.$confirm(`要设置 [${row.项目名称}] 的托收有效性吗?`, "警告", {
-            confirmButtonText: "确认",
-            cancelButtonText: "取消",
-            type: "warning",
-          })
-            .then(() => {
-              this.$emit("updatePayFeeItem", row);
-            })
-            .catch(() => {
-              this.$emit("cacnelUpdatePayFeeItem", row);
-              console.log("点击取消");
-            })
-        }
-      }
-    },
     showPayItemId() {
       this.showDosageItemId = !this.showDosageItemId;
       if (this.showDosageItemId) {
@@ -320,6 +288,7 @@ export default {
     },
     // 分表可编辑input的 回车处理
     changeSubVal(key, val, row) {
+      this.checkNowNum(key, val, row)
       const sortSubState = this.sortSubTableKey(key, val)
       let selectIdx = this.getSelectIdx() 
       if(sortSubState) {
@@ -332,7 +301,7 @@ export default {
       }
     },
     getSelectIdx() {
-      this.dosageSelectItems.findIndex((row) => 
+      return this.dosageSelectItems.findIndex((row) => 
         row.FJYSID === this.selectSubRow.FJYSID
       )
     },
@@ -359,6 +328,7 @@ export default {
     },
     // 分表输入框失去焦点
     subInputBlur(key, val, row, event) {
+      this.checkNowNum(key, val, row)
       if(event.key === 'Tab') {
         const sortSubState = this.sortSubTableKey(key, val)
         if(sortSubState) {
@@ -371,10 +341,14 @@ export default {
           this.$emit('updateSubRow', totalData)
         }
       }
+    },
+    // 校验本次读数
+    checkNowNum(key, val, row) {
+      if(key === '本次读数' && parseFloat(row.上次读数) > val) {
+        this.$message.warning('本次读数不应小于上次读数！')
+        return
+      }
     }
-  },
-};
+  }
+}
 </script>
-
-<style>
-</style>
