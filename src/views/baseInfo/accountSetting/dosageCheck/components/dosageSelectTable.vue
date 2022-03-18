@@ -7,7 +7,6 @@
     <el-table
       border
       size="mini"
-      show-summary
       ref="selectChargeItem"
       :data="dosageSelectItems"
       :height="tableHeightBot"
@@ -288,16 +287,17 @@ export default {
     },
     // 分表可编辑input的 回车处理
     changeSubVal(key, val, row) {
-      this.checkNowNum(key, val, row)
-      const sortSubState = this.sortSubTableKey(key, val)
-      let selectIdx = this.getSelectIdx() 
-      if(sortSubState) {
-        let data = {
-          subTable: {...row},
-          editField: key
+      if(this.checkNowNum(key, val, row)) {
+        const sortSubState = this.sortSubTableKey(key, val)
+        let selectIdx = this.getSelectIdx() 
+        if(sortSubState) {
+          let data = {
+            subTable: {...row},
+            editField: key
+          }
+          let totalData = { data: data, selectIdx, type: 0 }
+          this.$emit('updateSubRow', totalData)
         }
-        let totalData = { data: data, selectIdx, type: 0 }
-        this.$emit('updateSubRow', totalData)
       }
     },
     getSelectIdx() {
@@ -328,8 +328,8 @@ export default {
     },
     // 分表输入框失去焦点
     subInputBlur(key, val, row, event) {
-      this.checkNowNum(key, val, row)
       if(event.key === 'Tab') {
+        if(!this.checkNowNum(key, val, row)) return
         const sortSubState = this.sortSubTableKey(key, val)
         if(sortSubState) {
           let selectIdx = this.getSelectIdx() 
@@ -346,7 +346,9 @@ export default {
     checkNowNum(key, val, row) {
       if(key === '本次读数' && parseFloat(row.上次读数) > val) {
         this.$message.warning('本次读数不应小于上次读数！')
-        return
+        return false
+      } else {
+        return true
       }
     }
   }

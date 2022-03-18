@@ -290,6 +290,9 @@ export default {
     },
   },
   methods: {
+    getFirstTabRow(row) {
+      this.$refs.dosageUserData.setCurrentRow(row);
+    },
     // 输入框只能输入合法数字的校验
     onlyNumber(num, row, key) {
       row[key] = onlyNumOnePoint(num)
@@ -319,6 +322,10 @@ export default {
       this.selectRow = { ...row };
       // 传递给父组件
       this.$emit("handleCurrentUser", row);
+      this.$refs.dosageUserData.setCurrentRow(row);
+    },
+    // 继续选中选中行
+    handleSelectedRow(row) {
       this.$refs.dosageUserData.setCurrentRow(row);
     },
     toggleSelection(rows) {
@@ -368,7 +375,7 @@ export default {
       } else if(event.key === 'Tab' && sortState) {
         if (~~this.subTabLength) {
           await this.showModel(key, val, row, event.key)
-        } else {
+        } else if(event.key === 'Tab') {
           this.keyTabEvent(key, val, row)
         }
       }
@@ -381,7 +388,7 @@ export default {
       }).then(() => {
         if(type === 'Enter') {
           this.keyEnterEvent(key, val, row)
-        } else {
+        } else if(type === 'Tab') {
           this.keyTabEvent(key, val, row)
         }
       }).catch(() => {
@@ -390,7 +397,7 @@ export default {
     },
     // 实际回车逻辑处理
     keyEnterEvent(key, val, row) {
-      this.checkNowNum(key, val, row) 
+      if(this.checkNowNum(key, val, row)) return
       let selectIdx = this.dosageUserData.findIndex(
         (row) => row.ID === this.selectRow.ID
       );
@@ -404,7 +411,6 @@ export default {
     judgeLength(selectIdx) {
       // 长度判断 是切换到下一行还是隐藏
       if(selectIdx + 1 < this.dosageUserData.length) {
-        console.log(this.dosageUserData[selectIdx + 1])
         this.handleCurrentChange(this.dosageUserData[selectIdx + 1]);
       } else {
         this.$refs.dosageUserData.setCurrentRow();
@@ -412,7 +418,7 @@ export default {
     },
     // 实际的tab逻辑
     keyTabEvent(key, val, row) {
-      this.checkNowNum(key, val, row) 
+      if(this.checkNowNum(key, val, row)) return
       let selectIdx = this.dosageUserData.findIndex(
         (row) => row.ID === this.selectRow.ID
       );
@@ -442,7 +448,9 @@ export default {
     checkNowNum(key, val, row) {
       if(key === '本次读数' && parseFloat(row.上次读数) > val) {
         this.$message.warning('本次读数不应小于上次读数！')
-        return
+        return true
+      } else {
+        return false
       }
     }
   }

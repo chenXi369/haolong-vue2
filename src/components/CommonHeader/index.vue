@@ -346,9 +346,13 @@ export default {
     // 多选时的楼栋改变
     checkBoxbuildChange: debounce(function() {
       let newArr = this.$refs.checkBoxbuild.value
+      let newNameArr = this.buildingList.filter(item => {
+        if(newArr.includes(item.buildingId)) return item
+      }).map(e => e = e.buildingName)
       this.commonHeaderForm.buildingId = [ ...newArr ];
+      this.commonHeaderForm.buildingName = [ ...newNameArr ];
       this.$emit("changeWyBuild", this.commonHeaderForm);
-    }, 1500),
+    }, 1000),
     // 单选时楼栋改变
     buildChange(e) {
       this.commonHeaderForm.buildingId = e;

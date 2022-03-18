@@ -23,7 +23,7 @@
           数 据<i class="el-icon-arrow-down el-icon--right"></i>
         </el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item :disabled="total === 0">
+          <el-dropdown-item>
             <el-dropdown trigger="hover" placement="right-start">
               <span class="el-dropdown">
                 计算附加项目费用<i style="margin-left: 60px"
@@ -31,15 +31,31 @@
                 ></i>
               </span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>计算全部附加项目</el-dropdown-item>
-                <el-dropdown-item>计算选定附加项目</el-dropdown-item>
+                <div class="drop-item">按选定物业计算</div>
+                <el-dropdown-item @click.native="calPlusItem('wy', 0)" divided>计算全部附加项目</el-dropdown-item>
+                <el-dropdown-item @click.native="calPlusItem('wy', 1)">计算选定附加项目</el-dropdown-item>
+
+                <div class="border-drop drop-item">按选定楼栋计算</div>
+                <el-dropdown-item @click.native="calPlusItem('build', 0)" divided>计算全部附加项目</el-dropdown-item>
+                <el-dropdown-item @click.native="calPlusItem('build', 1)">计算选定附加项目</el-dropdown-item>
+
+                <div class="border-drop drop-item">按选定客户计算</div>
+                <el-dropdown-item 
+                  @click.native="calPlusItem('user', 0)"
+                  divided
+                  :disabled="dosageUserTotal === 0"
+                >计算全部附加项目</el-dropdown-item>
+                <el-dropdown-item 
+                  @click.native="calPlusItem('user', 1)"
+                  :disabled="dosageUserTotal === 0"
+                >计算选定附加项目</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-dropdown-item>
-          <el-dropdown-item :disabled="total === 0"
+          <el-dropdown-item :disabled="dosageUserTotal === 0"
             >重新计算走表费用</el-dropdown-item
           >
-          <el-dropdown-item :disabled="total === 0" divided>
+          <el-dropdown-item :disabled="dosageUserTotal === 0" divided>
             <el-dropdown trigger="hover" placement="right-start">
               <span class="el-dropdown">
                 用量数据导入<i style="margin-left: 88px"
@@ -52,23 +68,23 @@
               </el-dropdown-menu>
             </el-dropdown>
           </el-dropdown-item>
-          <el-dropdown-item :disabled="total === 0"
+          <el-dropdown-item :disabled="dosageUserTotal === 0"
             >用量数据-导出文件</el-dropdown-item
           >
 
-          <el-dropdown-item :disabled="total === 0" divided
+          <el-dropdown-item :disabled="dosageUserTotal === 0" divided
             >指定用量报警值</el-dropdown-item
           >
-          <el-dropdown-item :disabled="total === 0" divided
+          <el-dropdown-item :disabled="dosageUserTotal === 0" divided
             >分摊计算...</el-dropdown-item
           >
 
-          <el-dropdown-item :disabled="total === 0" divided
+          <el-dropdown-item :disabled="dosageUserTotal === 0" divided
             >更新【上次】抄表日期</el-dropdown-item
           >
-          <el-dropdown-item :disabled="total === 0" 
+          <el-dropdown-item :disabled="dosageUserTotal === 0" 
             >更新【本次】抄表日期</el-dropdown-item
-          ><el-dropdown-item :disabled="total === 0" divided
+          ><el-dropdown-item :disabled="dosageUserTotal === 0" divided
             >校验总表与分表的数据关系</el-dropdown-item
           >
         </el-dropdown-menu>
@@ -81,8 +97,8 @@
           审 核<i class="el-icon-arrow-down el-icon--right"></i>
         </el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item :disabled="total === 0">成批审核</el-dropdown-item>
-          <el-dropdown-item :disabled="total === 0" divided
+          <el-dropdown-item :disabled="dosageUserTotal === 0">成批审核</el-dropdown-item>
+          <el-dropdown-item :disabled="dosageUserTotal === 0" divided
             >成批反审核</el-dropdown-item
           >
         </el-dropdown-menu>
@@ -95,24 +111,24 @@
           报 表<i class="el-icon-arrow-down el-icon--right"></i>
         </el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item :disabled="total === 0"
+          <el-dropdown-item :disabled="dosageUserTotal === 0"
             >用量登记表（当月 总/分表）</el-dropdown-item
           >
-          <el-dropdown-item :disabled="total === 0"
+          <el-dropdown-item :disabled="dosageUserTotal === 0"
             >用量登记表（下月 总/分表）</el-dropdown-item
           >
 
-          <el-dropdown-item :disabled="total === 0" divided
+          <el-dropdown-item :disabled="dosageUserTotal === 0" divided
             >用量登记表（当月 总表）</el-dropdown-item
           >
-          <el-dropdown-item :disabled="total === 0"
+          <el-dropdown-item :disabled="dosageUserTotal === 0"
             >用量登记表（下月 总表）</el-dropdown-item
           >
 
-          <el-dropdown-item :disabled="total === 0" divided
+          <el-dropdown-item :disabled="dosageUserTotal === 0" divided
             >计量费用明细表</el-dropdown-item
           >
-          <el-dropdown-item :disabled="total === 0"
+          <el-dropdown-item :disabled="dosageUserTotal === 0"
             >总表分表读书登记表（*）</el-dropdown-item
           >
         </el-dropdown-menu>
@@ -167,9 +183,9 @@
 <script>
 export default {
   props: {
-    total: {
+    dosageUserTotal: {
       type: Number,
-      default: 1,
+      default: 0
     },
   },
   data() {
@@ -198,6 +214,12 @@ export default {
     handleCommand(e) {
       this.dosageToolForm.sortType = e;
       this.$emit("changeWyBuild", this.dosageToolForm);
+    },
+    calPlusItem(type, val) {
+      let data = {
+        type, val
+      }
+      this.$emit('dosageCalPlusItem', data)
     }
   }
 }
@@ -207,5 +229,13 @@ export default {
 .activeItem {
   background: #eaeaea;
   color: #1890ff;
+}
+.border-drop {
+  border-top: 1px solid #e5e5e5;
+}
+.drop-item {
+  padding: 10px 12px 2px;
+  font-size: 14px; 
+  color: #666;
 }
 </style>
