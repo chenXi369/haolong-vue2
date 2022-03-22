@@ -46,7 +46,7 @@
       </el-table-column>
       <el-table-column label="表类别" width="100" align="center">
         <template slot-scope="scope">
-          {{ scope.row.表类别 }}
+          <span>{{ tableClassList[scope.row.表类别].label }}</span>
         </template>
       </el-table-column>
       <el-table-column prop="表名" label="表名"></el-table-column>
@@ -59,13 +59,13 @@
           <el-input
             v-model="scope.row.上次读数"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.上次读数)"
             @keyup.enter.native="changeSubVal('上次读数' ,scope.row.上次读数, scope.row)"
             @keydown.native="(item) => subInputBlur('上次读数', scope.row.上次读数, scope.row, item)"
-            v-focus
+            v-clearZero
           ></el-input>
-          <span v-else>{{ scope.row.上次读数 }}</span>
+          <span v-show="!scope.row.isEdit">{{ scope.row.上次读数 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="本次读数" width="120" align="right">
@@ -73,13 +73,13 @@
           <el-input
             v-model="scope.row.本次读数"
             size="mini"
-            v-show="scope.row.isEdit"
+            v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.本次读数)"
             @keyup.enter.native="changeSubVal('本次读数' ,scope.row.本次读数, scope.row)"
             @keydown.native="(item) => subInputBlur('本次读数', scope.row.本次读数, scope.row, item)"
-            v-clearZero
+            v-focus
           ></el-input>
-          <span v-show="!scope.row.isEdit">{{ scope.row.本次读数 }}</span>
+          <span v-else>{{ scope.row.本次读数 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="净用量" width="120" align="right">
@@ -99,15 +99,15 @@
       <el-table-column label="附加用量" width="120" align="right">
         <template slot-scope="scope">
           <el-input
-            v-model="scope.row.附加用量"
+            v-model="scope.row.分摊用量"
             size="mini"
             v-show="scope.row.isEdit"
-            @input="onlyNumber(scope.row.附加用量)"
-            @keyup.enter.native="changeSubVal('附加用量' ,scope.row.附加用量, scope.row)"
-            @keydown.native="(item) => subInputBlur('附加用量', scope.row.附加用量, scope.row, item)"
+            @input="onlyNumber(scope.row.分摊用量)"
+            @keyup.enter.native="changeSubVal('分摊用量' ,scope.row.分摊用量, scope.row)"
+            @keydown.native="(item) => subInputBlur('分摊用量', scope.row.分摊用量, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span v-show="!scope.row.isEdit">{{ scope.row.附加用量 }}</span>
+          <span v-show="!scope.row.isEdit">{{ scope.row.分摊用量 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="计费用量" width="120" align="right">
@@ -180,20 +180,21 @@ export default {
     return {
       showDosageItemId: false,
       tableTypeList: ['', '', '', '', ''],
-      selectSubRow: {}
-    };
+      selectSubRow: {},
+      tableClassList: [
+        { label: "普通表", id: 0 },
+        { label: "峰期表", id: 1 },
+        { label: "尖期表", id: 2 },
+        { label: "平期表", id: 3 },
+        { label: "谷期表", id: 4 },
+        { label: "峰平谷计算", id: 5 },
+      ]
+    }
   },
   computed: {
     tableHeightBot() {
       let tHeight = this.bottomHeight.height - 40;
       return tHeight;
-    },
-  },
-  watch: {
-    dosageSelectItems() {
-      this.$nextTick(() => {
-        this.$refs.selectChargeItem.setCurrentRow(this.dosageSelectItems[0]);
-      });
     },
   },
   methods: {
@@ -265,25 +266,17 @@ export default {
         })
       }
     },
+    // 选中行
+    getSubSelectRow(row) {
+      this.handleCurrentChange(row)
+    },
     // 单选选中
     handleCurrentChange(row) {
       if(row !== null) {
         this.selectSubRow = { ...row }
-        this.$nextTick(() => {
-          this.filterSelected(row.FJYSID)
-        })
+        this.$emit('subHandleSelect', row)
         this.$refs.selectChargeItem.setCurrentRow(row);
       }
-    },
-    // 过滤分表的选中项
-    filterSelected(id) {
-      this.dosageSelectItems.map((item) => {
-        if(item.FJYSID === id) {
-          item.isEdit = true
-        } else {
-          item.isEdit = false
-        }
-      })
     },
     // 分表可编辑input的 回车处理
     changeSubVal(key, val, row) {

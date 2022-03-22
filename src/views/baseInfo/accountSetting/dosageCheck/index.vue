@@ -39,6 +39,7 @@
         :dosageSelectItems="dosageSelectItems"
         :dosageSelectLoading="dosageSelectLoading"
         @updateSubRow="updateSubRow"
+        @subHandleSelect="subHandleSelect"
         @sublengthOverFlow="sublengthOverFlow"
       >
       </dosage-select-table>
@@ -125,7 +126,8 @@ export default {
         reminderTitle: null,
         reminderFooter: null,
         reminderContent: []
-      }
+      },
+      subIndex: 0
     };
   },
   components: {
@@ -169,6 +171,7 @@ export default {
     changeMultiSelect(val) {
       this.isCheckbox = val;
     },
+    // 获取总表
     getSummaryList(e) {
       this.dosageTableLoading = true;
       this.timer = setTimeout(() => {
@@ -191,7 +194,6 @@ export default {
           .then((res) => {
             this.dosageUserData = this.arrSetEdit([...res.data.records]);
             this.dosageUserTotal = res.data.total;
-            console.log(this.dosageUserTotal)
             this.dosageTableLoading = false;
             this.dosageSelectItems = []
           }).then(() => {
@@ -213,18 +215,28 @@ export default {
             this.dosageUserData.map((item) => {
               item.isEdit = false
             })
+            this.$refs.dosageSubTab.getSubSelectRow(this.dosageSelectItems[this.subIndex]);
           } else {
+            this.subIndex = 0
             this.dosageSelectItems = []
             let selectIdx = this.dosageUserData.findIndex(item => 
               item.ID === row.ID
             )
-            this.dosageUserData = this.arrSetEdit(this.dosageUserData)
+            this.dosageUserData = this.arrSetEdit([...this.dosageUserData])
             this.$set(this.dosageUserData[selectIdx], 'isEdit', true)
           }
           this.dosageSelectLoading = false
           this.subTabLength = this.dosageSelectItems.length
         })
       }
+    },
+    // 修改分表的选中状态
+    subHandleSelect(row) {
+      this.dosageSelectItems = this.arrSetEdit([...this.dosageSelectItems])
+      const selectSubIdx = this.dosageSelectItems.findIndex(item => {
+        return item.FJXMID === row.FJXMID
+      })
+      this.$set(this.dosageSelectItems[selectSubIdx], 'isEdit', true)
     },
     // 设置可编辑状态
     arrSetEdit(arr) {
@@ -235,6 +247,7 @@ export default {
     },
     // 总表单选选中
     handleCurrentUser(row) {
+      console.log(this.dosageUserData)
       this.selectedAllTabRow = {...row}
       this.getSubmeterList(row)
     },
@@ -255,10 +268,13 @@ export default {
     updateAllTabRow(total) {
       let sumData = {...total.data}
       updateSummary(sumData).then((res) => {
-        this.$set(this.dosageUserData, total.selectIdx, {...res.sumTable})
+        let sumTableData = {...res.sumTable, isEdit: false}
+        this.$set(this.dosageUserData, total.selectIdx, sumTableData)
         if(!total.type) {
+          // 回车的处理
           this.$refs.dosageAllTab.judgeLength(total.selectIdx)
         } else {
+          // tab的处理
           this.$set(this.dosageUserData[total.selectIdx], 'isEdit', true)
         }
       })
@@ -267,11 +283,14 @@ export default {
     updateSubRow(total) {
       let subData = {...total.data, sumTable: this.selectedAllTabRow}
       updateSummary(subData).then((res) => {
-        let allIndex = this.dosageUserData.findIndex(item => {
+        let subIndex = this.dosageUserData.findIndex(item => {
           return item.ID === this.selectedAllTabRow.ID
         })
-        this.dosageUserData[allIndex] = { ...res.sumTable }
+        let sumTableData = {...res.sumTable, isEdit: false}
+        this.$set(this.dosageUserData, subIndex, sumTableData)
+        this.$refs.dosageAllTab.handleSelectedRow(sumTableData)
         if(!total.type) {
+          this.subIndex = ++subIndex
           this.dosageSelectItems[total.selectIdx] = res.subTable[total.selectIdx]
           this.$refs.dosageSubTab.judgeLength(total.selectIdx)
         } else {

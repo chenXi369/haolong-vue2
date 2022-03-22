@@ -63,12 +63,12 @@
           <el-input
             v-model="scope.row.上次读数"
             size="mini"
-            v-if="scope.row.isEdit"
+            v-show="scope.row.isEdit"
             @input="onlyNumber(scope.row.上次读数, scope.row, '上次读数')"
             @keydown.native="(item) => editTabCol('上次读数', scope.row.上次读数, scope.row, item)"
-            v-focus
+            v-clearZero
           ></el-input>
-          <div @dblclick="openEditState(scope.row)" v-else>
+          <div @dblclick="openEditState(scope.row)" v-show="!scope.row.isEdit">
             {{ scope.row.上次读数 }}
           </div>
         </template>
@@ -78,12 +78,12 @@
           <el-input
             v-model="scope.row.本次读数"
             size="mini"
-            v-show="scope.row.isEdit"
+            v-if="scope.row.isEdit"
             @input="onlyNumber(scope.row.本次读数, scope.row, '本次读数')"
             @keydown.native="(item) => editTabCol('本次读数', scope.row.本次读数, scope.row, item)"
-            v-clearZero
+            v-focus
           ></el-input>
-          <span @dblclick="openEditState(scope.row)"  v-show="!scope.row.isEdit">{{ scope.row.本次读数 }}</span>
+          <span @dblclick="openEditState(scope.row)" v-else>{{ scope.row.本次读数 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="净用量" align="right" width="120">
@@ -102,14 +102,14 @@
       <el-table-column label="附加用量" align="right" width="120">
         <template slot-scope="scope">
           <el-input
-            v-model="scope.row.附加用量"
+            v-model="scope.row.分摊用量"
             size="mini"
             v-show="scope.row.isEdit"
-            @input="onlyNumber(scope.row.附加用量, scope.row, '附加用量')"
-            @keydown.native="(item) => editTabCol('附加用量', scope.row.附加用量, scope.row, item)"
+            @input="onlyNumber(scope.row.分摊用量, scope.row, '分摊用量')"
+            @keydown.native="(item) => editTabCol('分摊用量', scope.row.分摊用量, scope.row, item)"
             v-clearZero
           ></el-input>
-          <span @dblclick="openEditState(scope.row)" v-show="!scope.row.isEdit">{{ scope.row.附加用量 }}</span>
+          <span @dblclick="openEditState(scope.row)" v-show="!scope.row.isEdit">{{ scope.row.分摊用量 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="计费用量" align="right" width="120">
@@ -355,7 +355,6 @@ export default {
         }
       });
     },
-
     // 打开编辑状态
     openEditState(row) {
       row.isEdit = true;
